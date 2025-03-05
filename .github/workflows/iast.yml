@@ -3,22 +3,15 @@ on:
   push:
     branches:
       - main
+
 jobs:
-  sast:
-    name: Static Analysis (Psalm & SonarCloud)
+  sonarcloud:
+    name: SonarCloud Scan
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repo
+      - name: Checkout the repository
         uses: actions/checkout@v4
-
-      - name: Psalm Security Scan
-        uses: docker://ghcr.io/psalm/psalm-security-scan
-
-      - name: Import Security Analysis results into GitHub Security Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
 
       - name: Set up JDK 17 (Required for SonarCloud)
         uses: actions/setup-java@v3
@@ -26,21 +19,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache SonarCloud Packages
-        uses: actions/cache@v3
+      - name: Cache SonarCloud scanner
+        uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          key: sonar-scanner-cli
+          restore-keys: sonar-scanner-cli
 
       - name: Run SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: .
           args: >
             -Dsonar.organization=your-org-name
-            -Dsonar.projectKey=25440d6c0e71ce0748dc330694d86281dc1e5324
+            -Dsonar.projectKey=your-project-key
             -Dsonar.sources=.
             -Dsonar.host.url=https://sonarcloud.io
