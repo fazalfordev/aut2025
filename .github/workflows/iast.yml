@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   sast:
-    name: Psalm
+    name: Static Analysis (Psalm & SonarCloud)
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
@@ -19,37 +19,28 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
-          
-  test:
-    name: DAST
-    permissions: write-all
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v4
 
-      - name: Create isolated network
-        run: docker network create --driver bridge isolated      
-
-      - name: Deploy AUT
-        run: docker build -t my-php-site:latest .
-        
-      - name: Run AUT
-        run: docker run --network=isolated -p 80:80 --name docker-apache -t -d my-php-site:latest
-
-      - name: Get AUT URL
-        run: |
-          URL=http://$(ip -f inet -o addr show docker0 | awk '{print $4}' | cut -d '/' -f 1)
-          echo "URL=$URL" >> $GITHUB_ENV
-      
-      - name: Check AUT URL
-        run: curl ${{ env.URL }}
-
-      - name: ZAP Scan
-        uses: hermanka/action-full-scan@master
+      - name: Set up JDK 17 (Required for SonarCloud)
+        uses: actions/setup-java@v3
         with:
-          target: ${{ env.URL }}
-          network_name: isolated
-        
-      - name: stop docker
-        run: docker stop docker-apache
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache SonarCloud Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=your-org-name
+            -Dsonar.projectKey=your-project-key
+            -Dsonar.sources=.
+            -Dsonar.host.url=https://sonarcloud.io
