@@ -32,7 +32,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=aut2025
-            -Dsonar.projectKey=aut2025
+            -Dsonar.organization=fazalfordev
+            -Dsonar.projectKey=fazalfordev
             -Dsonar.sources=.
             -Dsonar.host.url=https://sonarcloud.io
