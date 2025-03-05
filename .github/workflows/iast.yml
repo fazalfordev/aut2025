@@ -41,6 +41,6 @@ jobs:
           projectBaseDir: .
           args: >
             -Dsonar.organization=your-org-name
-            -Dsonar.projectKey=your-project-key
+            -Dsonar.projectKey=25440d6c0e71ce0748dc330694d86281dc1e5324
             -Dsonar.sources=.
             -Dsonar.host.url=https://sonarcloud.io
